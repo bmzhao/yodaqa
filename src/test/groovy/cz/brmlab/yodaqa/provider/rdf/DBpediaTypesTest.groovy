@@ -1,6 +1,6 @@
 package cz.brmlab.yodaqa.provider.rdf
 
-import cz.brmlab.yodaqa.provider.rdf.*
+import cz.brmlab.yodaqa.provider.rdf.dbpedia.DBpediaTypes
 import org.junit.Test;
  /**
  *

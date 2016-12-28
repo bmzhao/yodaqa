@@ -119,6 +119,12 @@
       </typeDescription>
 
       <typeDescription>
+        <name>cz.brmlab.yodaqa.model.TyCor.CustomPropertyLAT</name>
+        <description>LAT generated from DBpedia raw infobox property name.</description>
+        <supertypeName>cz.brmlab.yodaqa.model.TyCor.LAT</supertypeName>
+      </typeDescription>
+
+      <typeDescription>
         <name>cz.brmlab.yodaqa.model.TyCor.WordnetLAT</name>
         <description>LAT generated from other LATs by Wordnet hypernymy relationships.</description>
         <supertypeName>cz.brmlab.yodaqa.model.TyCor.LAT</supertypeName>

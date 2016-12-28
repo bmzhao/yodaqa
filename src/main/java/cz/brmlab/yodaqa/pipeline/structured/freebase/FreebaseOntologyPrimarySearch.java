@@ -1,9 +1,9 @@
-package cz.brmlab.yodaqa.pipeline.structured;
+package cz.brmlab.yodaqa.pipeline.structured.freebase;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
+import cz.brmlab.yodaqa.pipeline.structured.StructuredPrimarySearch;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.util.JCasUtil;
@@ -20,7 +20,7 @@ import cz.brmlab.yodaqa.model.Question.Clue;
 import cz.brmlab.yodaqa.model.Question.ClueNE;
 import cz.brmlab.yodaqa.model.Question.Concept;
 import cz.brmlab.yodaqa.model.TyCor.FBOntologyLAT;
-import cz.brmlab.yodaqa.provider.rdf.FreebaseOntology;
+import cz.brmlab.yodaqa.provider.rdf.freebase.FreebaseOntology;
 import cz.brmlab.yodaqa.provider.rdf.PropertyValue;
 
 /**

@@ -1,5 +1,6 @@
-package cz.brmlab.yodaqa.provider.rdf;
+package cz.brmlab.yodaqa.provider.rdf.freebase;
 
+import cz.brmlab.yodaqa.provider.rdf.CachedJenaLookup;
 import cz.brmlab.yodaqa.provider.url.UrlConstants;
 import cz.brmlab.yodaqa.provider.url.UrlManager;
 

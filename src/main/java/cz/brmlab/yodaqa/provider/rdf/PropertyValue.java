@@ -23,12 +23,12 @@ public class PropertyValue {
 	protected String valRes;
 	protected String witness;
 
-	AnswerFV afv;
-	String origin;  /* AnswerSourceStructured origin field. */
+	private AnswerFV afv;
+	private String origin;  /* AnswerSourceStructured origin field. */
 
-	protected Double score; // ok to be unset
+	private Double score; // ok to be unset
 
-	PropertyValue(String object_,
+	public PropertyValue(String object_,
 			String objRes_, String property_,
 			String value_, String valRes_,
 			String witness_,

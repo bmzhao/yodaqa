@@ -1,4 +1,4 @@
-package cz.brmlab.yodaqa.provider.rdf;
+package cz.brmlab.yodaqa.provider.rdf.dbpedia;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -133,14 +133,14 @@ public class DBpediaTitles extends DBpediaLookup {
 			for (Article a : entities) {
 				results.addAll(queryArticle(a, logger));
 
-				/* **d/movies specific**: attempt forceful
-				 * topic-specific disambiguation */
-				// lord of the rings
-				Article a2 = a.newRenamed(a.getName() + "_(film_series)");
-				results.addAll(queryArticle(a2, logger));
-				// ender's game etc.
-				a2 = a.newRenamed(a.getName() + "_(film)");
-				results.addAll(queryArticle(a2, logger));
+//				/* **d/movies specific**: attempt forceful
+//				 * topic-specific disambiguation */
+//				// lord of the rings
+//				Article a2 = a.newRenamed(a.getName() + "_(film_series)");
+//				results.addAll(queryArticle(a2, logger));
+//				// ender's game etc.
+//				a2 = a.newRenamed(a.getName() + "_(film)");
+//				results.addAll(queryArticle(a2, logger));
 			}
 			results = deduplicateResults(results);
 			if (!results.isEmpty())

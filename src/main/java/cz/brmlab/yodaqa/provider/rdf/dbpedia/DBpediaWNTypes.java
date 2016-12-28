@@ -1,4 +1,4 @@
-package cz.brmlab.yodaqa.provider.rdf;
+package cz.brmlab.yodaqa.provider.rdf.dbpedia;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -12,7 +12,6 @@ import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.dictionary.Dictionary;
 import net.sf.extjwnl.data.Synset;
 
-import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.uima.resource.ResourceInitializationException;

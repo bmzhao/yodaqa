@@ -20,7 +20,7 @@ import cz.brmlab.yodaqa.model.CandidateAnswer.AnswerInfo;
 import cz.brmlab.yodaqa.model.Question.Focus;
 import cz.brmlab.yodaqa.model.TyCor.LAT;
 import cz.brmlab.yodaqa.model.TyCor.DBpLAT;
-import cz.brmlab.yodaqa.provider.rdf.DBpediaTypes;
+import cz.brmlab.yodaqa.provider.rdf.dbpedia.DBpediaTypes;
 
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.NN;
 import de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.POS;

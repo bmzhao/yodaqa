@@ -1,5 +1,6 @@
-package cz.brmlab.yodaqa.pipeline.structured;
+package cz.brmlab.yodaqa.pipeline.structured.dbpedia;
 
+import cz.brmlab.yodaqa.pipeline.structured.StructuredAnswerProducer;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.resource.ResourceInitializationException;
 
@@ -15,7 +16,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 public class DBpediaPropertyAnswerProducer extends StructuredAnswerProducer {
 	public static AnalysisEngineDescription createEngineDescription()
 			throws ResourceInitializationException {
-		return createEngineDescription("cz.brmlab.yodaqa.pipeline.structured.DBpediaPropertyAnswerProducer",
+		return createEngineDescription("cz.brmlab.yodaqa.pipeline.structured.dbpedia.DBpediaPropertyAnswerProducer",
 				DBpediaPropertyPrimarySearch.class);
 	}
 }

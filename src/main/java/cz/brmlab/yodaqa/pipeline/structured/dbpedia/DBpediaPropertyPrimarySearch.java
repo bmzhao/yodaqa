@@ -1,8 +1,9 @@
-package cz.brmlab.yodaqa.pipeline.structured;
+package cz.brmlab.yodaqa.pipeline.structured.dbpedia;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.brmlab.yodaqa.pipeline.structured.StructuredPrimarySearch;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.jcas.JCas;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import cz.brmlab.yodaqa.flow.dashboard.AnswerSourceStructured;
 import cz.brmlab.yodaqa.analysis.ansscore.AF;
 import cz.brmlab.yodaqa.model.Question.Concept;
 import cz.brmlab.yodaqa.model.TyCor.DBpPropertyLAT;
-import cz.brmlab.yodaqa.provider.rdf.DBpediaProperties;
+import cz.brmlab.yodaqa.provider.rdf.dbpedia.DBpediaProperties;
 import cz.brmlab.yodaqa.provider.rdf.PropertyValue;
 
 /**

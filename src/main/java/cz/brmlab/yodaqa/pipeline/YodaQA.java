@@ -1,5 +1,6 @@
 package cz.brmlab.yodaqa.pipeline;
 
+import cz.brmlab.yodaqa.pipeline.structured.custom.CustomPropertyAnswerProducer;
 import cz.brmlab.yodaqa.provider.url.UrlConstants;
 import cz.brmlab.yodaqa.provider.url.UrlManager;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -16,11 +17,9 @@ import cz.brmlab.yodaqa.analysis.answer.AnswerAnalysisAE;
 import cz.brmlab.yodaqa.analysis.question.QuestionAnalysisAE;
 import cz.brmlab.yodaqa.flow.FixedParallelFlowController;
 import cz.brmlab.yodaqa.flow.asb.ParallelEngineFactory;
-import cz.brmlab.yodaqa.pipeline.solrdoc.SolrDocAnswerProducer;
-import cz.brmlab.yodaqa.pipeline.solrfull.SolrFullAnswerProducer;
-import cz.brmlab.yodaqa.pipeline.structured.DBpediaOntologyAnswerProducer;
-import cz.brmlab.yodaqa.pipeline.structured.DBpediaPropertyAnswerProducer;
-import cz.brmlab.yodaqa.pipeline.structured.FreebaseOntologyAnswerProducer;
+import cz.brmlab.yodaqa.pipeline.structured.dbpedia.DBpediaOntologyAnswerProducer;
+import cz.brmlab.yodaqa.pipeline.structured.dbpedia.DBpediaPropertyAnswerProducer;
+import cz.brmlab.yodaqa.pipeline.structured.freebase.FreebaseOntologyAnswerProducer;
 import cz.brmlab.yodaqa.provider.IPv6Check;
 import cz.brmlab.yodaqa.provider.solr.SolrNamedSource;
 
@@ -139,7 +138,7 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 
 			AnalysisEngineDescription answerCASMerger = AnalysisEngineFactory.createEngineDescription(
 					AnswerCASMerger.class,
-					AnswerCASMerger.PARAM_ISLAST_BARRIER, 3,
+					AnswerCASMerger.PARAM_ISLAST_BARRIER, (UrlManager.getInstance().getUrl(UrlConstants.CUSTOM) == null? 3: 4),
 					AnswerCASMerger.PARAM_PHASE, 0,
 					ParallelEngineFactory.PARAM_NO_MULTIPROCESSING, 1);
 			builder.add(answerCASMerger);
@@ -294,6 +293,13 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 		builder.add(dbpProp);
 		AnalysisEngineDescription fbOnt = FreebaseOntologyAnswerProducer.createEngineDescription();
 		builder.add(fbOnt);
+
+		if (UrlManager.getInstance().getUrl(UrlConstants.CUSTOM) != null) {
+			AnalysisEngineDescription customProp = CustomPropertyAnswerProducer.createEngineDescription();
+			builder.add(customProp);
+		}
+
+
 
 		/* Full-text search: */
 		/* XXX: These aggregates have "Solr" in name but do not

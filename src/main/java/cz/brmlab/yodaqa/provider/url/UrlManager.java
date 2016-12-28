@@ -167,8 +167,8 @@ public class UrlManager {
     }
 
     /**
-     * Looks up particular URL in current backend, used by cz.brmlab.yodaqa.provider.rdf.FreebaseLookup,
-     * cz.brmlab.yodaqa.provider.rdf.DBpediaTitles.java cz.brmlab.yodaqa.provider.rdf.DBpediaLookup and
+     * Looks up particular URL in current backend, used by cz.brmlab.yodaqa.provider.rdf.freebase.FreebaseLookup,
+     * cz.brmlab.yodaqa.provider.rdf.dbpedia.DBpediaTitles.java cz.brmlab.yodaqa.provider.rdf.dbpedia.DBpediaLookup and
      * cz.brmlab.yodaqa.pipeline.YodaQA
      *
      * @param urlkey: the UrlConstants constant string that maps to a system property or dict map key

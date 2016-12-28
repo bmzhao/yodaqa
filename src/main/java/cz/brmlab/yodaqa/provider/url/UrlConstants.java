@@ -13,4 +13,5 @@ public class UrlConstants {
     public final static String DBPEDIA_LABEL = "cz.brmlab.yodaqa.dbpedialabelurl";
     public final static String DICTIONARY_LABEL = "cz.brmlab.yodaqa.dictionarylabelurl";
     public final static String SOLR = "cz.brmlab.yodaqa.solrurl";
+    public final static String CUSTOM = "cz.brmlab.yodaqa.customurl";
 }

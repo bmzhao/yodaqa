@@ -39,7 +39,7 @@ import cz.brmlab.yodaqa.model.Question.ClueNgram;
 import cz.brmlab.yodaqa.model.Question.CluePhrase;
 import cz.brmlab.yodaqa.model.Question.ClueSubject;
 import cz.brmlab.yodaqa.model.Question.Concept;
-import cz.brmlab.yodaqa.provider.rdf.DBpediaTitles;
+import cz.brmlab.yodaqa.provider.rdf.dbpedia.DBpediaTitles;
 
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 

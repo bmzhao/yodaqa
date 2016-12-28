@@ -2,6 +2,7 @@
   {
     "cz.brmlab.yodaqa.dbpediaurl": "http://yodaqa.felk.cvut.cz/fuseki-dbp/dbpedia/query",
     "cz.brmlab.yodaqa.freebaseurl": "http://yodaqa.felk.cvut.cz/fuseki-fb/freebase/query",
+    "cz.brmlab.yodaqa.customurl": null,
     "cz.brmlab.yodaqa.dbpedialabelurl": "http://yodaqa.felk.cvut.cz/dbp-labels1",
     "cz.brmlab.yodaqa.dictionarylabelurl": "http://yodaqa.felk.cvut.cz/dbp-labels2",
     "cz.brmlab.yodaqa.solrurl": "http://yodaqa.felk.cvut.cz/apache/solr/"

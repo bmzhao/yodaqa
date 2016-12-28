@@ -16,7 +16,7 @@ import cz.brmlab.yodaqa.model.Question.Focus;
 import cz.brmlab.yodaqa.model.TyCor.DBpLAT;
 import cz.brmlab.yodaqa.model.TyCor.DBpWNLAT;
 import cz.brmlab.yodaqa.model.TyCor.LAT;
-import cz.brmlab.yodaqa.provider.rdf.DBpediaWNTypes;
+import cz.brmlab.yodaqa.provider.rdf.dbpedia.DBpediaWNTypes;
 
 /**
  * Generate LAT annotations in a CandidateAnswerCAS. This is based on the

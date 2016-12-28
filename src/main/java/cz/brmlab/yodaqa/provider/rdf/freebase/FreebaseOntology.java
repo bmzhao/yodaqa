@@ -1,4 +1,4 @@
-package cz.brmlab.yodaqa.provider.rdf;
+package cz.brmlab.yodaqa.provider.rdf.freebase;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,6 +13,8 @@ import cz.brmlab.yodaqa.analysis.ansscore.AF;
 import cz.brmlab.yodaqa.analysis.ansscore.AnswerFV;
 import cz.brmlab.yodaqa.model.Question.Concept;
 
+import cz.brmlab.yodaqa.provider.rdf.PropertyPath;
+import cz.brmlab.yodaqa.provider.rdf.PropertyValue;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 

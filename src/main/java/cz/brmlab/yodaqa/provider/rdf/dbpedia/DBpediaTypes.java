@@ -1,4 +1,4 @@
-package cz.brmlab.yodaqa.provider.rdf;
+package cz.brmlab.yodaqa.provider.rdf.dbpedia;
 
 import java.util.ArrayList;
 import java.util.HashSet;
