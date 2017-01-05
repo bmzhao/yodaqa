@@ -19,6 +19,9 @@ import cz.brmlab.yodaqa.model.Question.ClueSubjectPhrase;
 import cz.brmlab.yodaqa.model.Question.QuestionInfo;
 import cz.brmlab.yodaqa.model.Question.ArtificialClue;
 
+import cz.brmlab.yodaqa.provider.rdf.Article;
+import cz.brmlab.yodaqa.provider.rdf.customkb.CustomEntityNames;
+import cz.brmlab.yodaqa.provider.url.UrlManager;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
@@ -46,26 +49,29 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 /**
  * Potentially convert CluePhrase and ClueNE instances to ClueConcept
  * annotations.  This is basically an **Entity Linking** task execution.
- *
+ * <p>
  * ClueConcept instances are much more powerful than CluePhrase and ClueNE
  * since they carry semantic information about correspondence between
  * a string and a certain concept.  This is used chiefly in two ways:
- *
+ * <p>
  * (i) This clue is not further sub-divided.  I.e. "Moby Dick" stays that
  * way and isn't further split to "Moby" and "Dick" too.
- *
+ * <p>
  * (ii) The page corresponding to this concept bypasses full-text solr
  * search and is directly considered for passage extraction.  It is also
  * used as a base for structured searches.
- *
+ * <p>
  * To achieve (i), we will also delete all clues covered by ClueConcept,
  * and we will of course consider ClueConcept candidates from the longest
- * to the shortest. */
+ * to the shortest.
+ */
 
 public class CluesToConcepts extends JCasAnnotator_ImplBase {
 	final Logger logger = LoggerFactory.getLogger(CluesToConcepts.class);
 
 	final DBpediaTitles dbp = new DBpediaTitles();
+	final CustomEntityNames cen = new CustomEntityNames();
+
 
 	final ConceptClassifier classifier = new ConceptClassifier();
 
@@ -73,11 +79,13 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		super.initialize(aContext);
 	}
 
-	/** A blacklist of clues that will never yield a useful concept.
+	/**
+	 * A blacklist of clues that will never yield a useful concept.
 	 * We got this by inspecting set of extra-produced concepts for the
 	 * moviesC dataset, compared to the gold standard.
 	 * FIXME: Get extra-produced concepts for an arbitrary dataset
-	 * (without gold standard), and a precise methodology. */
+	 * (without gold standard), and a precise methodology.
+	 */
 	protected static String labelBlacklist = "name|script|music|director|film|movie|voice";
 
 	public void process(JCas resultView) throws AnalysisEngineProcessException {
@@ -101,7 +109,16 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			/* Execute entity linking from clue text to
 			 * a corresponding enwiki article.  This internally
 			 * involves also some fuzzy lookups and such. */
-			List<DBpediaTitles.Article> results = dbp.query(clueLabel, logger);
+			List<Article> results = dbp.query(clueLabel, logger);
+
+			/**
+			 * query the custom knowledge base label lookup if url exists
+			 */
+			if (UrlManager.getInstance().hasCustomUrl()) {
+				List<Article> customResults = cen.query(clueLabel, logger);
+				results.addAll(customResults);
+			}
+
 			if (results.size() == 0)
 				continue; // no linkage
 
@@ -118,13 +135,28 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 				if (SyntaxCanonization.getCanonText(clueLabel).toLowerCase().matches(labelBlacklist))
 					continue; // explicit blacklist
 
-				List<DBpediaTitles.Article> allResults = dbp.query(clueLabel, logger);
+				List<Article> allResults = dbp.query(clueLabel, logger);
 				/* Require a sharp DBpedia match or we get
 				 * a massive amount of noise. */
-				List<DBpediaTitles.Article> results = new ArrayList<>();
-				for (DBpediaTitles.Article result : allResults)
-					if (result.isByFuzzyLookup() && result.getDist() == 0)
+				List<Article> results = new ArrayList<>();
+				for (Article result : allResults) {
+					if (result.isByFuzzyLookup() && result.getDist() == 0) {
 						results.add(result);
+					}
+				}
+
+				/**
+				 * query custom knowledge base label lookup as well
+				 */
+				if (UrlManager.getInstance().hasCustomUrl()) {
+					List<Article> customResults = cen.query(clueLabel, logger);
+					for (Article result : customResults) {
+						if (result.getDist() == 0) {
+							results.add(result);
+						}
+					}
+				}
+
 
 				if (results.size() == 0) {
 					logger.debug("{}-gram clue <<{}>> - no match", n, clue.getLabel());
@@ -165,7 +197,7 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		for (LinkedClue c : keptClues) {
 			Clue clue = c.getClue();
 			List<ClueLabel> clueLabels = new ArrayList<>();
-			for (DBpediaTitles.Article a : c.getArticles()) {
+			for (Article a : c.getArticles()) {
 				String cookedLabel = cookLabel(clue.getLabel(), a.getCanonLabel());
 
 				Concept concept = new Concept(resultView);
@@ -224,7 +256,7 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 					ClueLabel cl2 = labels.get(cookedLabel);
 					cl2.addAll(cl.getConcepts());
 					logger.debug("{} concepts labelled <<{}>>",
-						cl2.getConcepts().size(), cookedLabel);
+							cl2.getConcepts().size(), cookedLabel);
 				}
 			}
 		}
@@ -245,7 +277,9 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		addCluesForLabels(resultView, labelList);
 	}
 
-	/** Get a set of clues to check for concept links. */
+	/**
+	 * Get a set of clues to check for concept links.
+	 */
 	protected List<Clue> cluesToCheck(JCas resultView) {
 		List<Clue> clues = new ArrayList<>();
 		for (Clue clue : JCasUtil.select(resultView, CluePhrase.class))
@@ -259,15 +293,17 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		return clues;
 	}
 
-	protected List<Clue> artificialCluesToCheck(JCas resultView){
+	protected List<Clue> artificialCluesToCheck(JCas resultView) {
 		List<Clue> clues = new ArrayList<>();
 		for (Clue clue : JCasUtil.select(resultView, ArtificialClue.class))
 			clues.add(clue);
 		return clues;
 	}
 
-	/** Produce a pretty label from sometimes-unwieldy enwiki article
-	 * name. */
+	/**
+	 * Produce a pretty label from sometimes-unwieldy enwiki article
+	 * name.
+	 */
 	protected String cookLabel(String clueLabel, String canonLabel) {
 		String cookedLabel = new String(canonLabel);
 		if (cookedLabel.toLowerCase().matches("^list of .*")) {
@@ -285,7 +321,9 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		return cookedLabel;
 	}
 
-	/** Generate n-gram clues from the token sequence in questionView. */
+	/**
+	 * Generate n-gram clues from the token sequence in questionView.
+	 */
 	protected List<ClueNgram> generateNgramClues(JCas questionView, int n) {
 		List<Token> nTokens = new LinkedList<>();
 		List<ClueNgram> ngrams = new ArrayList<>();
@@ -299,7 +337,7 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 				/* produce */
 				ClueNgram clue = new ClueNgram(questionView);
 				clue.setBegin(nTokens.get(0).getBegin());
-				clue.setEnd(nTokens.get(n-1).getEnd());
+				clue.setEnd(nTokens.get(n - 1).getEnd());
 				clue.setBase(nTokens.get(0));
 				clue.setWeight(1.01); /* slightly prefer over tokens */
 				clue.setLabel(clue.getCoveredText()); // no canonization!
@@ -313,17 +351,19 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		return ngrams;
 	}
 
-	/** Check overlapping clues and subdue them.  Subduing means
+	/**
+	 * Check overlapping clues and subdue them.  Subduing means
 	 * that they are removed from the clue set, and also not considered
 	 * for concept creation anymore.
-	 *
+	 * <p>
 	 * However, the method returns true if it's the passed @clue
 	 * that has been subdued - in case it has high edit distance
 	 * relative to the covered clues, i.e. typically a false positive
-	 * (relying solely on that clue is typically disastrous). */
+	 * (relying solely on that clue is typically disastrous).
+	 */
 	protected boolean subdueCoveredClues(LinkedClue lc,
-			HashMap<Clue, LinkedClue> linkedClues,
-			PriorityQueue<LinkedClue> cluesByLen) {
+										 HashMap<Clue, LinkedClue> linkedClues,
+										 PriorityQueue<LinkedClue> cluesByLen) {
 		Clue clue = lc.getClue();
 		for (Clue clueSub : JCasUtil.selectCovered(Clue.class, clue)) {
 			LinkedClue linkedClueSub = linkedClues.get(clueSub);
@@ -356,7 +396,9 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		return false;
 	}
 
-	/** Remove the entity link records of a given clue. */
+	/**
+	 * Remove the entity link records of a given clue.
+	 */
 	protected void removeLinkedClue(Map<Clue, LinkedClue> linkedClues, PriorityQueue<LinkedClue> clueQueue, Clue clue) {
 		List<LinkedClue> toRemove = new ArrayList<>();
 		for (LinkedClue c : clueQueue)
@@ -371,8 +413,10 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			linkedClues.remove(c);
 	}
 
-	/** Add clue(s) and register concepts for each label
-	 * in the given list. */
+	/**
+	 * Add clue(s) and register concepts for each label
+	 * in the given list.
+	 */
 	protected void addCluesForLabels(JCas resultView, List<ClueLabel> labelList) {
 		boolean originalClueNEd = false; // guard for single ClueNE generation
 		int rank = 1;
@@ -419,8 +463,8 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			 * sub-clues and the original clue might have been just
 			 * a CluePhrase that gets ignored during search. */
 			if (reworded && !originalClueNEd) {
-					addNEClue(resultView, clue.getBegin(), clue.getEnd(),
-							clue, clue.getLabel(), clue.getWeight());
+				addNEClue(resultView, clue.getBegin(), clue.getEnd(),
+						clue, clue.getLabel(), clue.getWeight());
 				originalClueNEd = true; // once is enough
 			}
 
@@ -429,7 +473,7 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 	}
 
 	protected void addClue(JCas jcas, int begin, int end, Annotation base,
-			double weight, FSList concepts, String label, boolean isReliable) {
+						   double weight, FSList concepts, String label, boolean isReliable) {
 		ClueConcept clue = new ClueConcept(jcas);
 		clue.setBegin(begin);
 		clue.setEnd(end);
@@ -446,7 +490,7 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 	}
 
 	protected void addNEClue(JCas jcas, int begin, int end, Annotation base,
-			String label, double weight) {
+							 String label, double weight) {
 		ClueNE clue = new ClueNE(jcas);
 		clue.setBegin(begin);
 		clue.setEnd(end);
@@ -458,29 +502,41 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		logger.debug("new(NE) by {}: {} <| {}", base.getType().getShortName(), clue.getLabel(), clue.getCoveredText());
 	}
 
-	/** A container that holds a clue with all its linked articles
-	 * (sorted by edit distance). */
+	/**
+	 * A container that holds a clue with all its linked articles
+	 * (sorted by edit distance).
+	 */
 	private class LinkedClue {
 		protected Clue clue;
-		protected List<DBpediaTitles.Article> articles;
+		protected List<Article> articles;
 
-		/** Edit distance of the best linked match. */
+		/**
+		 * Edit distance of the best linked match.
+		 */
 		protected double dist;
-		/** Length of the clue, for subduing purposes. */
+		/**
+		 * Length of the clue, for subduing purposes.
+		 */
 		protected int len;
 
-		/** Whether this linked clue subdued another clue
-		 * of a certain kind. */
+		/**
+		 * Whether this linked clue subdued another clue
+		 * of a certain kind.
+		 */
 		protected boolean bySubject, byLAT, byNE, byNgram;
 
-		/** The score of the best-faring concept produced
-		 * by this clue. */
+		/**
+		 * The score of the best-faring concept produced
+		 * by this clue.
+		 */
 		protected double bestScore;
-		/** The reciprocial rank in a list of LinkedClues
-		 * sorted by bestScore. */
+		/**
+		 * The reciprocial rank in a list of LinkedClues
+		 * sorted by bestScore.
+		 */
 		protected double rr;
 
-		public LinkedClue(Clue clue, List<DBpediaTitles.Article> articles) {
+		public LinkedClue(Clue clue, List<Article> articles) {
 			this.clue = clue;
 			this.articles = articles;
 
@@ -488,24 +544,69 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			this.len = clue.getEnd() - clue.getBegin();
 		}
 
-		public Clue getClue() { return clue; }
-		public List<DBpediaTitles.Article> getArticles() { return articles; }
-		public double getDist() { return dist; }
-		public int getLen() { return len; }
+		public Clue getClue() {
+			return clue;
+		}
 
-		public boolean isBySubject() { return bySubject; }
-		public void setBySubject(boolean bySubject) { this.bySubject = bySubject; }
-		public boolean isByLAT() { return byLAT; }
-		public void setByLAT(boolean byLAT) { this.byLAT = byLAT; }
-		public boolean isByNE() { return byNE; }
-		public void setByNE(boolean byNE) { this.byNE = byNE; }
-		public boolean isByNgram() { return byNgram; }
-		public void setByNgram(boolean byNgram) { this.byNE = byNgram; }
+		public List<Article> getArticles() {
+			return articles;
+		}
 
-		public double getBestScore() { return bestScore; }
-		public void addScore(double score) { if (score > bestScore) bestScore = score; }
-		public double getRr() { return rr; }
-		public void setRr(double rr) { this.rr = rr; }
+		public double getDist() {
+			return dist;
+		}
+
+		public int getLen() {
+			return len;
+		}
+
+		public boolean isBySubject() {
+			return bySubject;
+		}
+
+		public void setBySubject(boolean bySubject) {
+			this.bySubject = bySubject;
+		}
+
+		public boolean isByLAT() {
+			return byLAT;
+		}
+
+		public void setByLAT(boolean byLAT) {
+			this.byLAT = byLAT;
+		}
+
+		public boolean isByNE() {
+			return byNE;
+		}
+
+		public void setByNE(boolean byNE) {
+			this.byNE = byNE;
+		}
+
+		public boolean isByNgram() {
+			return byNgram;
+		}
+
+		public void setByNgram(boolean byNgram) {
+			this.byNE = byNgram;
+		}
+
+		public double getBestScore() {
+			return bestScore;
+		}
+
+		public void addScore(double score) {
+			if (score > bestScore) bestScore = score;
+		}
+
+		public double getRr() {
+			return rr;
+		}
+
+		public void setRr(double rr) {
+			this.rr = rr;
+		}
 
 		@Override
 		public boolean equals(Object o) {
@@ -522,10 +623,12 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 		}
 	}
 
-	/** A clue label corresponds to a (Clue, Concepts[]) tuple
+	/**
+	 * A clue label corresponds to a (Clue, Concepts[]) tuple
 	 * holding all concepts sharing a particular label.
-	 *
-	 * The concepts are assumed to be sorted by edit distance. */
+	 * <p>
+	 * The concepts are assumed to be sorted by edit distance.
+	 */
 	private class ClueLabel {
 		protected LinkedClue linkedClue;
 		protected String cookedLabel;
@@ -537,11 +640,25 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			this.concepts = concepts;
 		}
 
-		public String getCookedLabel() { return cookedLabel; }
-		public LinkedClue getLinkedClue() { return linkedClue; }
-		public List<Concept> getConcepts() { return concepts; }
-		public void add(Concept concept) { concepts.add(concept); }
-		public void addAll(Collection<Concept> conceptCol) { concepts.addAll(conceptCol); }
+		public String getCookedLabel() {
+			return cookedLabel;
+		}
+
+		public LinkedClue getLinkedClue() {
+			return linkedClue;
+		}
+
+		public List<Concept> getConcepts() {
+			return concepts;
+		}
+
+		public void add(Concept concept) {
+			concepts.add(concept);
+		}
+
+		public void addAll(Collection<Concept> conceptCol) {
+			concepts.addAll(conceptCol);
+		}
 
 		public double getScore() {
 			double maxScore = 0;
@@ -559,6 +676,7 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			return -Integer.compare(t1.getLen(), t2.getLen()); // longest first
 		}
 	}
+
 	/* Compares LinkedClues using the bestScore */
 	private class LinkedClueBestScoreComparator implements Comparator<LinkedClue> {
 		@Override
@@ -566,6 +684,7 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			return -Double.compare(t1.getBestScore(), t2.getBestScore()); // highest first
 		}
 	}
+
 	/* Compares ClueLabels using the classifier probability*/
 	private class ClueLabelClassifierComparator implements Comparator<ClueLabel> {
 		@Override

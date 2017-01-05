@@ -31,11 +31,12 @@ import de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordPosTagger;
 
 /**
  * The main YodaQA pipeline.
- *
+ * <p>
  * This is an aggregate AE that will run all stages of a pipeline
  * that takes a fresh QuestionCAS on its input (from a collection
  * reader) and produces a AnswerHitlistCAS with final answer ranking
- * on its output (for the consumer). */
+ * on its output (for the consumer).
+ */
 
 public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 	static {
@@ -87,8 +88,8 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 
 		builder.setFlowControllerDescription(
 				FlowControllerFactory.createFlowControllerDescription(
-					FixedFlowController.class,
-					FixedFlowController.PARAM_ACTION_AFTER_CAS_MULTIPLIER, "drop"));
+						FixedFlowController.class,
+						FixedFlowController.PARAM_ACTION_AFTER_CAS_MULTIPLIER, "drop"));
 
 		AnalysisEngineDescription aed = builder.createAggregateDescription();
 		aed.getAnalysisEngineMetaData().setName("cz.brmlab.yodaqa.pipeline.YodaQA");
@@ -97,9 +98,11 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 		return aed;
 	}
 
-	/** Build a multi-phase pipeline, possibly skipping some phases
+	/**
+	 * Build a multi-phase pipeline, possibly skipping some phases
 	 * based on property setting. Returns whether the pipeline outputs
-	 * new CASes. */
+	 * new CASes.
+	 */
 	protected static boolean buildPipeline(AggregateBuilder builder) throws ResourceInitializationException {
 		boolean outputsNewCASes = false;
 
@@ -138,7 +141,7 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 
 			AnalysisEngineDescription answerCASMerger = AnalysisEngineFactory.createEngineDescription(
 					AnswerCASMerger.class,
-					AnswerCASMerger.PARAM_ISLAST_BARRIER, (UrlManager.getInstance().getUrl(UrlConstants.CUSTOM) == null? 3: 4),
+					AnswerCASMerger.PARAM_ISLAST_BARRIER, (UrlManager.getInstance().hasCustomUrl() ? 4 : 3),
 					AnswerCASMerger.PARAM_PHASE, 0,
 					ParallelEngineFactory.PARAM_NO_MULTIPROCESSING, 1);
 			builder.add(answerCASMerger);
@@ -198,13 +201,13 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 			AnalysisEngineDescription answerTextMerger = AnalysisEngineFactory.createEngineDescription(
 					AnswerTextMerger.class);
 			builder.add(answerTextMerger,
-				CAS.NAME_DEFAULT_SOFA, "AnswerHitlist");
+					CAS.NAME_DEFAULT_SOFA, "AnswerHitlist");
 
 			/* Diffuse scores between textually similar answers. */
 			AnalysisEngineDescription evidenceDiffusion = AnalysisEngineFactory.createEngineDescription(
 					EvidenceDiffusion.class);
 			builder.add(evidenceDiffusion,
-				CAS.NAME_DEFAULT_SOFA, "AnswerHitlist");
+					CAS.NAME_DEFAULT_SOFA, "AnswerHitlist");
 
 		/* (Serialization / scoring point #1.) */
 		} else if (loadPhase == 1) {
@@ -294,7 +297,7 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 		AnalysisEngineDescription fbOnt = FreebaseOntologyAnswerProducer.createEngineDescription();
 		builder.add(fbOnt);
 
-		if (UrlManager.getInstance().getUrl(UrlConstants.CUSTOM) != null) {
+		if (UrlManager.getInstance().hasCustomUrl()) {
 			AnalysisEngineDescription customProp = CustomPropertyAnswerProducer.createEngineDescription();
 			builder.add(customProp);
 		}
@@ -311,8 +314,8 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 
 		builder.setFlowControllerDescription(
 				FlowControllerFactory.createFlowControllerDescription(
-					FixedParallelFlowController.class,
-					FixedParallelFlowController.PARAM_ACTION_AFTER_CAS_MULTIPLIER, "drop"));
+						FixedParallelFlowController.class,
+						FixedParallelFlowController.PARAM_ACTION_AFTER_CAS_MULTIPLIER, "drop"));
 
 		AnalysisEngineDescription aed = builder.createAggregateDescription();
 		aed.getAnalysisEngineMetaData().setName("cz.brmlab.yodaqa.pipeline.YodaQA.AnswerProducer");

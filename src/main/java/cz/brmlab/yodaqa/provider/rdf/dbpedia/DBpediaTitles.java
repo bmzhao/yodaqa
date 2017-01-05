@@ -18,6 +18,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.Gson;
 import com.hp.hpl.jena.rdf.model.Literal;
 
+import cz.brmlab.yodaqa.provider.rdf.Article;
 import cz.brmlab.yodaqa.provider.url.UrlConstants;
 import cz.brmlab.yodaqa.provider.url.UrlManager;
 import org.slf4j.Logger;
@@ -34,79 +35,6 @@ import org.slf4j.Logger;
 public class DBpediaTitles extends DBpediaLookup {
 	protected static final String fuzzyLookupUrl = UrlManager.getInstance().getUrl(UrlConstants.DBPEDIA_LABEL);
 	protected static final String crossWikiLookupUrl = UrlManager.getInstance().getUrl(UrlConstants.DICTIONARY_LABEL);
-
-	/** A container of enwiki article metadata.
-	 * This must 1:1 map to label-lookup API. */
-	public class Article implements Cloneable {
-		protected String name;
-		protected int pageID;
-		protected String matchedLabel;
-		protected String canonLabel;
-		protected double dist; // edit dist.
-		protected double pop; // relevance/prominence of the concept (universally or wrt. the question)
-		protected double prob;
-		protected String description; // long-ish text
-		protected boolean getByFuzzyLookup = false;
-		protected boolean getByCWLookup = false;
-
-		public Article(String label, int pageID) {
-			this.matchedLabel = label;
-			this.canonLabel = label;
-			this.pageID = pageID;
-		}
-
-		public Article(String label, int pageID, String name, double dist) {
-			this(label, pageID);
-			this.name = name;
-			this.dist = dist;
-		}
-
-		public Article(String label, int pageID, String name, double dist, double prob) {
-			this(label, pageID);
-			this.name = name;
-			this.dist = dist;
-			this.prob = prob;
-		}
-
-		public Article(Article baseA, String label, int pageID, String name, double pop, double prob, String descr) {
-			this.name = name;
-			this.pageID = pageID;
-			this.matchedLabel = baseA.matchedLabel;
-			this.canonLabel = label;
-			this.dist = baseA.dist;
-			this.pop = pop;
-			this.prob = prob;
-			this.description = descr;
-			this.getByCWLookup = baseA.getByCWLookup;
-			this.getByFuzzyLookup = baseA.getByFuzzyLookup;
-		}
-
-		public String getName() { return name; }
-		public int getPageID() { return pageID; }
-		public String getMatchedLabel() { return matchedLabel; }
-		public String getCanonLabel() { return canonLabel; }
-		public double getDist() { return dist; }
-		public double getPop() { return pop; }
-		public double getProb() { return prob; }
-		public String getDescription() { return description; }
-		public boolean isByFuzzyLookup() { return getByFuzzyLookup; }
-		public boolean isByCWLookup() { return getByCWLookup; }
-
-		public Article clone() {
-			try { // much boilerplate
-				return (Article) super.clone();
-			} catch (CloneNotSupportedException e) {
-				e.printStackTrace();
-				throw new RuntimeException();
-			}
-		}
-
-		public Article newRenamed(String newName) {
-			Article a2 = this.clone();
-			a2.name = newName;
-			return a2;
-		}
-	}
 
 	/** Query for a given title, returning a set of articles. */
 	public List<Article> query(String title, Logger logger) {
@@ -287,7 +215,7 @@ public class DBpediaTitles extends DBpediaLookup {
 				// Record all exact-matching entities,
 				// or the single nearest fuzzy-matched
 				// one.
-				o.getByFuzzyLookup = true;
+				o.setByFuzzyLookup(true);
 				if (o.getDist() == 0) {
 					// Sometimes, we get duplicates
 					// like "U.S. Navy" and "U.S. navy".
@@ -329,7 +257,7 @@ public class DBpediaTitles extends DBpediaLookup {
 		jr.beginArray();
 		while (jr.hasNext()) {
 			Article o = gson.fromJson(jr, Article.class);
-			o.getByCWLookup = true;
+			o.setByCWLookup(true);
 			results.add(o);
 			logger.debug("sqlite-lookup({}) returned: p{} ~{} [{}] {} {}", label, o.getProb(), o.getMatchedLabel(), o.getCanonLabel(), o.getName(), o.getPageID());
 		}
@@ -365,8 +293,8 @@ public class DBpediaTitles extends DBpediaLookup {
 				logger.debug("merge: fuzzyResult+cwResult {}", a.getName());
 			}
 			cwArticles.remove(a.getName());
-			a.prob = cwA.getProb();
-			a.getByCWLookup = true;
+			a.setProb(cwA.getProb());
+			a.setByCWLookup(true);
 		}
 		for (Article a : cwArticles.values()) {
 			logger.debug("merge: cwResult {}", a.getName());
@@ -391,11 +319,11 @@ public class DBpediaTitles extends DBpediaLookup {
 			Article r2 = byPageIDs.get(r.getPageID());
 			if (r2 != null) {
 				// already have it, merge
-				if (r.prob > r2.prob)
-					r2.prob = r.prob;
+				if (r.getProb()> r2.getProb())
+					r2.setProb(r.getProb());
 				// pop, dist is guaranteed to be the same
-				r2.getByCWLookup = r2.getByCWLookup || r.getByCWLookup;
-				r2.getByFuzzyLookup = r2.getByFuzzyLookup || r.getByFuzzyLookup;
+				r2.setByCWLookup(r2.isByCWLookup() || r.isByCWLookup());
+				r2.setByFuzzyLookup(r2.isByFuzzyLookup() || r.isByFuzzyLookup());
 				continue;
 			}
 			newResults.add(r);

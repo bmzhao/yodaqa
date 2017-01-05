@@ -93,7 +93,7 @@ public class AnswerFV {
 		"simpleScore",
 		"answerFocusNone", "answerFocusWhole",
 		"LATNE", "LATDBpType", "LATDBpWNType", "LATQuantity", "LATQuantityCD",
-			"LATWnInstance", "LATDBpOntology", "LATDBpProperty", "LATFBOntology",
+			"LATWnInstance", "LATDBpOntology", "LATDBpProperty", "LATFBOntology", "LATCustomProperty",
 		"tyCorSpQHit", "tyCorSpAHit", "tyCorSpNoHit", "tyCorSpQAHit", "tyCorSpMultiHit",
 		"tyCorANE", "tyCorADBp", "tyCorADBpWN", "tyCorAQuantity", "tyCorAQuantityCD",
 			"tyCorAWnInstance", "tyCorADBpOntology", "tyCorADBpProperty", "tyCorAFBOntology",

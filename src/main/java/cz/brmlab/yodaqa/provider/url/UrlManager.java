@@ -180,4 +180,12 @@ public class UrlManager {
         return overridingUrl == null ? currentBackend.getUrl(urlkey) : overridingUrl;
     }
 
+    /**
+     * check whether a custom knowledge base urls are available
+     * (used to determine whether pipeline should query custom knowledge base + label lookup)
+     */
+    public boolean hasCustomUrl() {
+        return (this.getUrl(UrlConstants.CUSTOM) != null) && (this.getUrl(UrlConstants.CUSTOM_LABEL) != null);
+    }
+
 }
