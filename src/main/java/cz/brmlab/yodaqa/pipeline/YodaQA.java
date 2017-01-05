@@ -141,7 +141,7 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 
 			AnalysisEngineDescription answerCASMerger = AnalysisEngineFactory.createEngineDescription(
 					AnswerCASMerger.class,
-					AnswerCASMerger.PARAM_ISLAST_BARRIER, (UrlManager.getInstance().hasCustomUrl() ? 4 : 3),
+					AnswerCASMerger.PARAM_ISLAST_BARRIER, (UrlManager.getInstance().hasCustomUrl() ? 1 : 0),
 					AnswerCASMerger.PARAM_PHASE, 0,
 					ParallelEngineFactory.PARAM_NO_MULTIPROCESSING, 1);
 			builder.add(answerCASMerger);
@@ -290,12 +290,12 @@ public class YodaQA /* XXX: extends AggregateBuilder ? */ {
 		 * PARAM_ISLAST_BARRIER. */
 
 		/* Structured search: */
-		AnalysisEngineDescription dbpOnt = DBpediaOntologyAnswerProducer.createEngineDescription();
-		builder.add(dbpOnt);
-		AnalysisEngineDescription dbpProp = DBpediaPropertyAnswerProducer.createEngineDescription();
-		builder.add(dbpProp);
-		AnalysisEngineDescription fbOnt = FreebaseOntologyAnswerProducer.createEngineDescription();
-		builder.add(fbOnt);
+//		AnalysisEngineDescription dbpOnt = DBpediaOntologyAnswerProducer.createEngineDescription();
+//		builder.add(dbpOnt);
+//		AnalysisEngineDescription dbpProp = DBpediaPropertyAnswerProducer.createEngineDescription();
+//		builder.add(dbpProp);
+//		AnalysisEngineDescription fbOnt = FreebaseOntologyAnswerProducer.createEngineDescription();
+//		builder.add(fbOnt);
 
 		if (UrlManager.getInstance().hasCustomUrl()) {
 			AnalysisEngineDescription customProp = CustomPropertyAnswerProducer.createEngineDescription();

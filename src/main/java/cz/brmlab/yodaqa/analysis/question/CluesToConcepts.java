@@ -69,7 +69,7 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 public class CluesToConcepts extends JCasAnnotator_ImplBase {
 	final Logger logger = LoggerFactory.getLogger(CluesToConcepts.class);
 
-	final DBpediaTitles dbp = new DBpediaTitles();
+//	final DBpediaTitles dbp = new DBpediaTitles();
 	final CustomEntityNames cen = new CustomEntityNames();
 
 
@@ -109,7 +109,8 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			/* Execute entity linking from clue text to
 			 * a corresponding enwiki article.  This internally
 			 * involves also some fuzzy lookups and such. */
-			List<Article> results = dbp.query(clueLabel, logger);
+//			List<Article> results = dbp.query(clueLabel, logger);
+            List<Article> results = new ArrayList<>();
 
 			/**
 			 * query the custom knowledge base label lookup if url exists
@@ -135,15 +136,15 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 				if (SyntaxCanonization.getCanonText(clueLabel).toLowerCase().matches(labelBlacklist))
 					continue; // explicit blacklist
 
-				List<Article> allResults = dbp.query(clueLabel, logger);
+//				List<Article> allResults = dbp.query(clueLabel, logger);
 				/* Require a sharp DBpedia match or we get
 				 * a massive amount of noise. */
 				List<Article> results = new ArrayList<>();
-				for (Article result : allResults) {
-					if (result.isByFuzzyLookup() && result.getDist() == 0) {
-						results.add(result);
-					}
-				}
+//				for (Article result : allResults) {
+//					if (result.isByFuzzyLookup() && result.getDist() == 0) {
+//						results.add(result);
+//					}
+//				}
 
 				/**
 				 * query custom knowledge base label lookup as well
