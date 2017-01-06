@@ -58,9 +58,15 @@ if [ "$1" = "-d" ]; then
 else
 	dataset=moviesC
 fi
-if [ "${1:0:2}" = "-D" ]; then
-	system_property=$1; shift
-fi
+
+system_property=""
+while [ "${1:0:2}" = "-D" ]; do
+    if [ -z system_property ]; then
+        system_property=$1
+    else
+        system_property+=" $1"; shift
+    fi
+done
 
 
 cid=$(git rev-parse --short "${1:-HEAD}")
