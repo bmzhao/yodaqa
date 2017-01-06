@@ -88,7 +88,7 @@ public class CustomEntityNames extends CustomLookup {
 		List<Article> results = new LinkedList<>();
 		String capitalisedLabel = super.capitalizeTitle(label);
 		String encodedName = URLEncoder.encode(capitalisedLabel, "UTF-8").replace("+", "%20");
-		String requestURL = customLookupUrl + "/search/" + encodedName + "?ver=1";
+		String requestURL = customLookupUrl + "/search?name=" + encodedName;
 
 		URL request = new URL(requestURL);
 		URLConnection connection = request.openConnection();
