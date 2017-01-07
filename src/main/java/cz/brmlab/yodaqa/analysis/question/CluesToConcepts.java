@@ -199,7 +199,8 @@ public class CluesToConcepts extends JCasAnnotator_ImplBase {
 			Clue clue = c.getClue();
 			List<ClueLabel> clueLabels = new ArrayList<>();
 			for (Article a : c.getArticles()) {
-				String cookedLabel = cookLabel(clue.getLabel(), a.getCanonLabel());
+				//no need to cook label since custom label lookup returns exact match
+				String cookedLabel = a.getCanonLabel();
 
 				Concept concept = new Concept(resultView);
 				concept.setBegin(clue.getBegin());

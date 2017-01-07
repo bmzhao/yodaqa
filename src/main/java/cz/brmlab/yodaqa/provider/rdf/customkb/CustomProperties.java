@@ -40,10 +40,8 @@ public class CustomProperties extends CustomLookup {
 	 * PropertyValue instances.
 	 */
 	public List<PropertyValue> queryTitleForm(String title, Logger logger) {
-		/* XXX: Case-insensitive search via SPARQL turns out
-		 * to be surprisingly tricky.  Cover 91% of all cases
-		 * by capitalizing words that are not stopwords  */
-		title = super.capitalizeTitle(title);
+		/* XXX:No need to do capitalization, since title string was obtained from elastic w/proper case sensitivity */
+//		title = super.capitalizeTitle(title);
 
 		String quotedTitle = title.replaceAll("\"", "").replaceAll("\\\\", "").replaceAll("\n", " ");
 		/* If you want to paste this to e.g.

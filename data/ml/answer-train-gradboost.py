@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/env python -u
 #
 # Train a GradientBoostingClassifier on the given answer TSV dataset.
 #
